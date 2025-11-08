@@ -1,10 +1,11 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { LoginForm } from "@/components/login-form"
 import { Dashboard } from "@/components/dashboard"
+import { useRouter } from "next/navigation"
 
 export default function Home() {
+  const router = useRouter()
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [userEmail, setUserEmail] = useState("")
   const [isLoading, setIsLoading] = useState(true)
@@ -16,20 +17,19 @@ export default function Home() {
     if (token && email) {
       setUserEmail(email)
       setIsAuthenticated(true)
+    } else {
+      // Redirect to login if not authenticated
+      router.push("/login")
     }
     setIsLoading(false)
-  }, [])
-
-  const handleLogin = (email: string) => {
-    setUserEmail(email)
-    setIsAuthenticated(true)
-  }
+  }, [router])
 
   const handleLogout = () => {
     localStorage.removeItem("token")
     localStorage.removeItem("userEmail")
     setIsAuthenticated(false)
     setUserEmail("")
+    router.push("/login")
   }
 
   if (isLoading) {
@@ -40,13 +40,13 @@ export default function Home() {
     )
   }
 
+  if (!isAuthenticated) {
+    return null
+  }
+
   return (
     <main>
-      {isAuthenticated ? (
-        <Dashboard userEmail={userEmail} onLogout={handleLogout} />
-      ) : (
-        <LoginForm onLogin={handleLogin} />
-      )}
+      <Dashboard userEmail={userEmail} onLogout={handleLogout} />
     </main>
   )
 }
